@@ -52,6 +52,25 @@ class Tablero:
                 self.entorno.ejecutar(agente_actual)
                 self.dibujar_tablero()
 
-            pygame.time.delay(500)
+            else:
+                # Verificar el estado del juego y mostrar el mensaje correspondiente
+                if self.entorno.ganador() == self.agente1.jugador:
+                    self.mostrar_mensaje("GANASTE", (0, 255, 0))  # Verde
+                elif self.entorno.ganador() == self.agente2.jugador:
+                    self.mostrar_mensaje("PERDISTE", (255, 0, 0))  # Rojo
+                else:
+                    self.mostrar_mensaje("EMPATASTE", (255, 0, 0))  # Rojo
+
+                pygame.time.delay(2000)  # Esperar 2 segundos antes de cerrar el juego
+                jugando = False
+
+            pygame.time.delay(500)  # Delay para visualizar mejor los movimientos
 
         pygame.quit()
+
+    def mostrar_mensaje(self, mensaje, color):
+        self.screen.fill((255, 255, 255))  # Limpiar la pantalla
+        fuente = pygame.font.Font(None, 64)
+        texto = fuente.render(mensaje, True, color)
+        self.screen.blit(texto, (self.width // 2 - texto.get_width() // 2, self.height // 2 - texto.get_height() // 2))
+        pygame.display.flip()

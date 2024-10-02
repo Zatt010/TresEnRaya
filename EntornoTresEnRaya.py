@@ -90,3 +90,20 @@ class EntornoTresEnRaya(Entorno):
             pygame.time.delay(500)  # Delay para visualizar mejor los movimientos
 
         pygame.quit()
+
+    def ganador(self):
+        for i in range(self.n):
+            if self.tablero[i][0] == self.tablero[i][1] == self.tablero[i][2] != ' ':
+                return self.tablero[i][0]
+            if self.tablero[0][i] == self.tablero[1][i] == self.tablero[2][i] != ' ':
+                return self.tablero[0][i]
+
+        if self.tablero[0][0] == self.tablero[1][1] == self.tablero[2][2] != ' ':
+            return self.tablero[0][0]
+        if self.tablero[0][2] == self.tablero[1][1] == self.tablero[2][0] != ' ':
+            return self.tablero[0][2]
+
+        if all(self.tablero[i][j] != ' ' for i in range(self.n) for j in range(self.n)):
+            return None
+
+        return None
