@@ -15,12 +15,13 @@ TAMANO_CUADRO = 100
 LINEA_ANCHO = 10
 
 class EntornoTresEnRaya(Entorno):
-    def __init__(self):
+    def __init__(self, n):
         super().__init__()
-        self.tablero = [[' ' for _ in range(3)] for _ in range(3)]
+        self.n = n
+        self.tablero = [[' ' for _ in range(n)] for _ in range(n)]
         self.turno = 0
         pygame.init()
-        self.screen = pygame.display.set_mode((300, 300))
+        self.screen = pygame.display.set_mode((n * TAMANO_CUADRO, n * TAMANO_CUADRO))
         pygame.display.set_caption("Tres en Raya")
         self.screen.fill(BLANCO)
         self.dibujar_tablero()
@@ -36,24 +37,29 @@ class EntornoTresEnRaya(Entorno):
         self.dibujar_tablero()
 
     def finalizado(self):
-        for i in range(3):
+        
+        for i in range(self.n):
             if self.tablero[i][0] == self.tablero[i][1] == self.tablero[i][2] != ' ':
                 return True
             if self.tablero[0][i] == self.tablero[1][i] == self.tablero[2][i] != ' ':
                 return True
+
+        
         if self.tablero[0][0] == self.tablero[1][1] == self.tablero[2][2] != ' ':
             return True
-        if self.tablero[0][2] == self.tablero[1][1] == self.tablero[2][0] != ' ':
+        if self.tablero[0][self.n-1] == self.tablero[1][self.n-2] == self.tablero[2][0] != ' ':
             return True
-        if all(self.tablero[i][j] != ' ' for i in range(3) for j in range(3)):
+
+        
+        if all(self.tablero[i][j] != ' ' for i in range(self.n) for j in range(self.n)):
             return True
+
         return False
 
     def dibujar_tablero(self):
-        # Dibujar las líneas del tablero
-        for i in range(1, 3):
-            pygame.draw.line(self.screen, NEGRO, (i * TAMANO_CUADRO, 0), (i * TAMANO_CUADRO, 300), LINEA_ANCHO)
-            pygame.draw.line(self.screen, NEGRO, (0, i * TAMANO_CUADRO), (300, i * TAMANO_CUADRO), LINEA_ANCHO)
+        for i in range(1, self.n):
+            pygame.draw.line(self.screen, NEGRO, (i * TAMANO_CUADRO, 0), (i * TAMANO_CUADRO, self.n * TAMANO_CUADRO), LINEA_ANCHO)
+            pygame.draw.line(self.screen, NEGRO, (0, i * TAMANO_CUADRO), (self.n * TAMANO_CUADRO, i * TAMANO_CUADRO), LINEA_ANCHO)
         self.actualizar_tablero()
 
     def actualizar_tablero(self):

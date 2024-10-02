@@ -1,10 +1,9 @@
 from AgenteIA.Agente import Agente
 from collections import namedtuple
 from abc import ABC
-
 class AgenteJugador(Agente, ABC):
-    def __init__(self, jugador, oponente, programa=None, profundidad_maxima=3):
-        super().__init__(programa)
+    def __init__(self, jugador, oponente, profundidad_maxima=3):
+        super().__init__()
         self.profundidad_maxima = profundidad_maxima
         self.jugador = jugador
         self.oponente = oponente
@@ -20,13 +19,15 @@ class AgenteJugador(Agente, ABC):
         return percepcion  
 
     def minimax(self, estado, profundidad, maximizador, alfa, beta):
-        if self.es_estado_final(estado) or profundidad == self.profundidad_maxima:
-            return self.evaluar(estado), None  
+        if self.es_estado_final(estado) or profundidad >= self.profundidad_maxima:
+            return self.evaluar(estado), None 
 
         if maximizador:
             max_eval = float('-inf')
             mejor_movimiento = None
-            for movimiento in self.obtener_movimientos_legales(estado):
+            movimientos = self.obtener_movimientos_legales(estado)
+            movimientos.sort(key=lambda x: self.evaluar_movimiento(estado, x), reverse=True)
+            for movimiento in movimientos:
                 nuevo_estado = [fila[:] for fila in estado]
                 fila, col = movimiento
                 nuevo_estado[fila][col] = self.jugador  
@@ -42,7 +43,9 @@ class AgenteJugador(Agente, ABC):
         else:
             min_eval = float('inf')
             mejor_movimiento = None
-            for movimiento in self.obtener_movimientos_legales(estado):
+            movimientos = self.obtener_movimientos_legales(estado)
+            movimientos.sort(key=lambda x: self.evaluar_movimiento(estado, x))
+            for movimiento in movimientos:
                 nuevo_estado = [fila[:] for fila in estado]
                 fila, col = movimiento
                 nuevo_estado[fila][col] = self.oponente  
@@ -57,8 +60,9 @@ class AgenteJugador(Agente, ABC):
 
     def obtener_movimientos_legales(self, estado):
         movimientos = []
-        for i in range(3):
-            for j in range(3):
+        n = len(estado)
+        for i in range(n):
+            for j in range(n):
                 if estado[i][j] == ' ':
                     movimientos.append((i, j))  # Guardar solo las coordenadas
         return movimientos
@@ -68,7 +72,15 @@ class AgenteJugador(Agente, ABC):
 
     def evaluar(self, estado):
         raise NotImplementedError
-    
+
+    def evaluar_movimiento(self, estado, movimiento):
+        fila, col = movimiento
+        if estado[fila][col] == ' ':
+            return 0
+        elif estado[fila][col] == self.jugador:
+            return 1
+        else:
+            return -1
 
     # evaluar  la utilidad, funcion de evaluacion que permita tener la mayor probabilidad de ganar 
     # profundidad maxima de 3 tablero 6x6

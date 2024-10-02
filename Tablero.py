@@ -4,14 +4,15 @@ from HumanoTresEnRaya import HumanoTresEnRaya
 from AgenteTresEnRaya import AgenteTresEnRaya
 
 class Tablero:
-    def __init__(self):
+    def __init__(self, n):
         pygame.init()
-        self.width = 300
-        self.height = 300
+        self.n = n
+        self.width = n * 100
+        self.height = n * 100
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Tres en Raya")
         
-        self.entorno = EntornoTresEnRaya()
+        self.entorno = EntornoTresEnRaya(n)  # Pass n to EntornoTresEnRaya
         self.agente1 = HumanoTresEnRaya(jugador='X', oponente='O')  # Proporciona el oponente
         self.agente2 = AgenteTresEnRaya(jugador='O', oponente='X')  # Proporciona el oponente
         self.entorno.insertar_objeto(self.agente1)
@@ -21,15 +22,15 @@ class Tablero:
 
     def dibujar_tablero(self):
         self.screen.fill((255, 255, 255))
-        for i in range(1, 3):
-            pygame.draw.line(self.screen, (0, 0, 0), (i * 100, 0), (i * 100, 300), 5)
-            pygame.draw.line(self.screen, (0, 0, 0), (0, i * 100), (300, i * 100), 5)
+        for i in range(1, self.n):
+            pygame.draw.line(self.screen, (0, 0, 0), (i * 100, 0), (i * 100, self.height), 5)
+            pygame.draw.line(self.screen, (0, 0, 0), (0, i * 100), (self.width, i * 100), 5)
         self.actualizar_tablero()
 
     def actualizar_tablero(self):
         fuente = pygame.font.Font(None, 100)
-        for fila in range(3):
-            for col in range(3):
+        for fila in range(self.n):
+            for col in range(self.n):
                 if self.entorno.tablero[fila][col] == 'X':
                     texto = fuente.render('X', True, (255, 0, 0))
                     self.screen.blit(texto, (col * 100 + 25, fila * 100 + 10))
