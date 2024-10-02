@@ -69,10 +69,9 @@ class AgenteTresEnRaya(AgenteJugador):
         oponente_count = linea.count(self.oponente)
         vacias = linea.count(' ')
         
-        # Caso ideal: el jugador ha llenado la línea
         if jugador_count == len(linea):
             return 100
-        # Caso oponente ha llenado la línea
+        
         elif oponente_count == len(linea):
             return -100
         

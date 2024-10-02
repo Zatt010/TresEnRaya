@@ -92,18 +92,26 @@ class EntornoTresEnRaya(Entorno):
         pygame.quit()
 
     def ganador(self):
+        
         for i in range(self.n):
-            if self.tablero[i][0] == self.tablero[i][1] == self.tablero[i][2] != ' ':
+            if all(self.tablero[i][j] == self.tablero[i][0] and self.tablero[i][j] != ' ' for j in range(self.n)):
                 return self.tablero[i][0]
-            if self.tablero[0][i] == self.tablero[1][i] == self.tablero[2][i] != ' ':
+
+        
+        for i in range(self.n):
+            if all(self.tablero[j][i] == self.tablero[0][i] and self.tablero[j][i] != ' ' for j in range(self.n)):
                 return self.tablero[0][i]
 
-        if self.tablero[0][0] == self.tablero[1][1] == self.tablero[2][2] != ' ':
+        
+        if all(self.tablero[i][i] == self.tablero[0][0] and self.tablero[i][i] != ' ' for i in range(self.n)):
             return self.tablero[0][0]
-        if self.tablero[0][2] == self.tablero[1][1] == self.tablero[2][0] != ' ':
-            return self.tablero[0][2]
 
+        
+        if all(self.tablero[i][self.n - i - 1] == self.tablero[0][self.n - 1] and self.tablero[i][self.n - i - 1] != ' ' for i in range(self.n)):
+            return self.tablero[0][self.n - 1]
+
+        
         if all(self.tablero[i][j] != ' ' for i in range(self.n) for j in range(self.n)):
-            return None
+            return "EMPATE"
 
         return None
