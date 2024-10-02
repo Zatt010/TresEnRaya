@@ -31,7 +31,7 @@ class EntornoTresEnRaya(Entorno):
 
     def ejecutar(self, agente):
         movimiento = agente.programa(self.tablero)
-        if movimiento:  # Asegúrate de que el movimiento no sea None
+        if movimiento:  
             self.tablero = movimiento
         self.turno = (self.turno + 1) % 2
         self.dibujar_tablero()
