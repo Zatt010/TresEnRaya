@@ -31,26 +31,31 @@ class EntornoTresEnRaya(Entorno):
 
     def ejecutar(self, agente):
         movimiento = agente.programa(self.tablero)
-        if movimiento:  # Asegúrate de que el movimiento no sea None
+        if movimiento:  
             self.tablero = movimiento
         self.turno = (self.turno + 1) % 2
         self.dibujar_tablero()
 
     def finalizado(self):
-        
+        # Comprueba filas
         for i in range(self.n):
-            if self.tablero[i][0] == self.tablero[i][1] == self.tablero[i][2] != ' ':
-                return True
-            if self.tablero[0][i] == self.tablero[1][i] == self.tablero[2][i] != ' ':
+            if all(self.tablero[i][j] == self.tablero[i][0] and self.tablero[i][j] != ' ' for j in range(self.n)):
                 return True
 
-        
-        if self.tablero[0][0] == self.tablero[1][1] == self.tablero[2][2] != ' ':
-            return True
-        if self.tablero[0][self.n-1] == self.tablero[1][self.n-2] == self.tablero[2][0] != ' ':
+        # Comprueba columnas
+        for i in range(self.n):
+            if all(self.tablero[j][i] == self.tablero[0][i] and self.tablero[j][i] != ' ' for j in range(self.n)):
+                return True
+
+        # Comprueba diagonal principal
+        if all(self.tablero[i][i] == self.tablero[0][0] and self.tablero[i][i] != ' ' for i in range(self.n)):
             return True
 
-        
+        # Comprueba diagonal secundaria
+        if all(self.tablero[i][self.n - i - 1] == self.tablero[0][self.n - 1] and self.tablero[i][self.n - i - 1] != ' ' for i in range(self.n)):
+            return True
+
+        # Comprueba si el tablero está lleno
         if all(self.tablero[i][j] != ' ' for i in range(self.n) for j in range(self.n)):
             return True
 
@@ -92,18 +97,26 @@ class EntornoTresEnRaya(Entorno):
         pygame.quit()
 
     def ganador(self):
+        # Comprueba filas
         for i in range(self.n):
-            if self.tablero[i][0] == self.tablero[i][1] == self.tablero[i][2] != ' ':
+            if all(self.tablero[i][j] == self.tablero[i][0] and self.tablero[i][j] != ' ' for j in range(self.n)):
                 return self.tablero[i][0]
-            if self.tablero[0][i] == self.tablero[1][i] == self.tablero[2][i] != ' ':
+
+        # Comprueba columnas
+        for i in range(self.n):
+            if all(self.tablero[j][i] == self.tablero[0][i] and self.tablero[j][i] != ' ' for j in range(self.n)):
                 return self.tablero[0][i]
 
-        if self.tablero[0][0] == self.tablero[1][1] == self.tablero[2][2] != ' ':
+        # Comprueba diagonal principal
+        if all(self.tablero[i][i] == self.tablero[0][0] and self.tablero[i][i] != ' ' for i in range(self.n)):
             return self.tablero[0][0]
-        if self.tablero[0][2] == self.tablero[1][1] == self.tablero[2][0] != ' ':
-            return self.tablero[0][2]
 
+        # Comprueba diagonal secundaria
+        if all(self.tablero[i][self.n - i - 1] == self.tablero[0][self.n - 1] and self.tablero[i][self.n - i - 1] != ' ' for i in range(self.n)):
+            return self.tablero[0][self.n - 1]
+
+        # Comprueba si el tablero está lleno
         if all(self.tablero[i][j] != ' ' for i in range(self.n) for j in range(self.n)):
-            return None
+            return "EMPATE"
 
         return None

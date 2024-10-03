@@ -2,12 +2,15 @@ import pygame
 from EntornoTresEnRaya import EntornoTresEnRaya
 from HumanoTresEnRaya import HumanoTresEnRaya
 from AgenteTresEnRaya import AgenteTresEnRaya
+<<<<<<< HEAD
 import socketio
 
 
 # Inicializar el cliente de Socket.IO
 sio = socketio.Client()
 
+=======
+>>>>>>> e3e18df8a4760c5a11ec74cf0520e5052cc96476
 class Tablero:
     def __init__(self, n):
         pygame.init()
@@ -77,20 +80,20 @@ class Tablero:
                 self.entorno.ejecutar(agente_actual)
                 self.dibujar_tablero()
 
-            else:
-                # Verificar el estado del juego y mostrar el mensaje correspondiente
-                if self.entorno.ganador() == self.agente1.jugador:
-                    self.mostrar_mensaje("GANASTE", (0, 255, 0))  # Verde
-                elif self.entorno.ganador() == self.agente2.jugador:
-                    self.mostrar_mensaje("PERDISTE", (255, 0, 0))  # Rojo
-                else:
-                    self.mostrar_mensaje("EMPATASTE", (255, 0, 0))  # Rojo
 
-                pygame.time.delay(2000)  # Esperar 2 segundos antes de cerrar el juego
+            else:
+                
+                if self.entorno.ganador() == self.agente1.jugador:
+                    self.mostrar_mensaje("GANASTE", (0, 255, 0))  
+                elif self.entorno.ganador() == self.agente2.jugador:
+                    self.mostrar_mensaje("PERDISTE", (255, 0, 0))  
+                else:
+                    self.mostrar_mensaje("EMPATASTE", (255, 0, 0))  
+
+                pygame.time.delay(2000)  
                 jugando = False
 
-            pygame.time.delay(500)  # Delay para visualizar mejor los movimientos
-
+            pygame.time.delay(500)  
         pygame.quit()
 
      # Actualizar el estado del juego desde el servidor
@@ -105,7 +108,7 @@ class Tablero:
         self.mostrar_mensaje(f"{ganador} GANÓ!", (0, 255, 0))
 
     def mostrar_mensaje(self, mensaje, color):
-        self.screen.fill((255, 255, 255))  # Limpiar la pantalla
+        self.screen.fill((255, 255, 255))  
         fuente = pygame.font.Font(None, 64)
         texto = fuente.render(mensaje, True, color)
         self.screen.blit(texto, (self.width // 2 - texto.get_width() // 2, self.height // 2 - texto.get_height() // 2))

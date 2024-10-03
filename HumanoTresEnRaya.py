@@ -1,5 +1,3 @@
-# HumanoTresEnRaya.py
-
 import pygame
 from AgenteTresEnRaya import AgenteTresEnRaya
 import copy
