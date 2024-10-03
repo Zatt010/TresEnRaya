@@ -2,6 +2,11 @@ import pygame
 from EntornoTresEnRaya import EntornoTresEnRaya
 from HumanoTresEnRaya import HumanoTresEnRaya
 from AgenteTresEnRaya import AgenteTresEnRaya
+import socketio
+
+
+# Inicializar el cliente de Socket.IO
+sio = socketio.Client()
 
 class Tablero:
     def __init__(self, n):
@@ -18,6 +23,16 @@ class Tablero:
         self.entorno.insertar_objeto(self.agente1)
         self.entorno.insertar_objeto(self.agente2)
         
+        self.board = ['' for _ in range(n * n)]  # Estado del tablero
+        self.currentPlayer = 'X'
+
+        # Conectar al servidor Socket.IO
+        sio.connect('http://localhost:5000')
+        sio.emit('setBoardSize', self.n)
+
+        sio.on('gameState', self.update_game_state)
+        sio.on('gameOver', self.show_winner)
+
         self.run()
 
     def dibujar_tablero(self):
@@ -46,6 +61,16 @@ class Tablero:
                 if event.type == pygame.QUIT:
                     jugando = False
 
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = pygame.mouse.get_pos()
+                    fila = pos[1] // 100
+                    col = pos[0] // 100
+                    index = fila * self.n + col
+
+                    # Emitir el movimiento al servidor si la celda está vacía
+                    if self.board[index] == '':
+                        sio.emit('playerMove', {'fila': fila, 'col': col, 'jugador': self.currentPlayer})
+
             if not self.entorno.finalizado():
                 agente_actual = self.entorno.agentes[self.entorno.turno]
                 self.entorno.percibir(agente_actual)
@@ -67,6 +92,17 @@ class Tablero:
             pygame.time.delay(500)  # Delay para visualizar mejor los movimientos
 
         pygame.quit()
+
+     # Actualizar el estado del juego desde el servidor
+    def update_game_state(self, data):
+        self.board = data['board']
+        self.currentPlayer = data['currentPlayer']
+        self.dibujar_tablero()
+
+    # Mostrar el ganador
+    def show_winner(self, data):
+        ganador = data['winner']
+        self.mostrar_mensaje(f"{ganador} GANÓ!", (0, 255, 0))
 
     def mostrar_mensaje(self, mensaje, color):
         self.screen.fill((255, 255, 255))  # Limpiar la pantalla
