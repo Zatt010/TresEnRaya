@@ -2,15 +2,11 @@ import pygame
 from EntornoTresEnRaya import EntornoTresEnRaya
 from HumanoTresEnRaya import HumanoTresEnRaya
 from AgenteTresEnRaya import AgenteTresEnRaya
-<<<<<<< HEAD
 import socketio
 
 
 # Inicializar el cliente de Socket.IO
 sio = socketio.Client()
-
-=======
->>>>>>> e3e18df8a4760c5a11ec74cf0520e5052cc96476
 class Tablero:
     def __init__(self, n):
         pygame.init()
@@ -30,7 +26,7 @@ class Tablero:
         self.currentPlayer = 'X'
 
         # Conectar al servidor Socket.IO
-        sio.connect('http://localhost:5000')
+        sio.connect('http://192.168.100.8:5000')
         sio.emit('setBoardSize', self.n)
 
         sio.on('gameState', self.update_game_state)
