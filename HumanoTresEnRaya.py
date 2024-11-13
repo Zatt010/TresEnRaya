@@ -23,7 +23,8 @@ class HumanoTresEnRaya(AgenteTresEnRaya):
                         self.movida_valida = True
                     else:
                         print("Movida no válida. Por favor, elija una casilla vacía.")
-        return self.hacer_movida(estado, self.ultima_movida)
+        return self.ultima_movida  # Retornamos la tupla fila, col
+
 
     def traducir_coordenadas(self, x, y):
         fila = y // 100

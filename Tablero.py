@@ -2,35 +2,26 @@ import pygame
 from EntornoTresEnRaya import EntornoTresEnRaya
 from HumanoTresEnRaya import HumanoTresEnRaya
 from AgenteTresEnRaya import AgenteTresEnRaya
-import socketio
 
-
-# Inicializar el cliente de Socket.IO
-sio = socketio.Client()
 class Tablero:
-    def __init__(self, n):
+    def __init__(self, n, piezas_en_linea=3):
         pygame.init()
         self.n = n
+        self.piezas_en_linea = piezas_en_linea  
         self.width = n * 100
         self.height = n * 100
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Tres en Raya")
         
-        self.entorno = EntornoTresEnRaya(n)  # Pass n to EntornoTresEnRaya
-        self.agente1 = HumanoTresEnRaya(jugador='X', oponente='O')  # Proporciona el oponente
-        self.agente2 = AgenteTresEnRaya(jugador='O', oponente='X')  # Proporciona el oponente
+        # Crear los agentes y entorno
+        self.entorno = EntornoTresEnRaya(n, self.piezas_en_linea)
+        self.agente1 = HumanoTresEnRaya(jugador='X', oponente='O')
+        self.agente2 = AgenteTresEnRaya(jugador='O', oponente='X', piezas_en_linea=self.piezas_en_linea)  # Paso de piezas en línea
         self.entorno.insertar_objeto(self.agente1)
         self.entorno.insertar_objeto(self.agente2)
         
-        self.board = ['' for _ in range(n * n)]  # Estado del tablero
+        self.board = ['' for _ in range(n * n)]
         self.currentPlayer = 'X'
-
-        # Conectar al servidor Socket.IO
-        sio.connect('http://192.168.100.8:5000')
-        sio.emit('setBoardSize', self.n)
-
-        sio.on('gameState', self.update_game_state)
-        sio.on('gameOver', self.show_winner)
 
         self.run()
 
@@ -60,25 +51,34 @@ class Tablero:
                 if event.type == pygame.QUIT:
                     jugando = False
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN and self.currentPlayer == 'X':
                     pos = pygame.mouse.get_pos()
                     fila = pos[1] // 100
                     col = pos[0] // 100
-                    index = fila * self.n + col
 
-                    # Emitir el movimiento al servidor si la celda está vacía
-                    if self.board[index] == '':
-                        sio.emit('playerMove', {'fila': fila, 'col': col, 'jugador': self.currentPlayer})
+                    if self.entorno.tablero[fila][col] == ' ':
+                        self.entorno.tablero[fila][col] = self.currentPlayer
+                        self.dibujar_tablero()
 
-            if not self.entorno.finalizado():
-                agente_actual = self.entorno.agentes[self.entorno.turno]
+                        if self.entorno.finalizado():
+                            jugando = False
+                            break
+                        
+                        self.currentPlayer = 'O'
+
+            if not self.entorno.finalizado() and self.currentPlayer == 'O':
+                agente_actual = self.entorno.agentes[1]  
                 self.entorno.percibir(agente_actual)
                 self.entorno.ejecutar(agente_actual)
                 self.dibujar_tablero()
 
+                if self.entorno.finalizado():
+                    jugando = False
+                    break
 
-            else:
-                
+                self.currentPlayer = 'X'
+
+            if self.entorno.finalizado():
                 if self.entorno.ganador() == self.agente1.jugador:
                     self.mostrar_mensaje("GANASTE", (0, 255, 0))  
                 elif self.entorno.ganador() == self.agente2.jugador:
@@ -86,26 +86,18 @@ class Tablero:
                 else:
                     self.mostrar_mensaje("EMPATASTE", (255, 0, 0))  
 
-                pygame.time.delay(2000)  
+                pygame.display.flip()  
+                pygame.time.delay(4000) 
                 jugando = False
 
-            pygame.time.delay(500)  
+            pygame.time.delay(500)
+
         pygame.quit()
 
-     # Actualizar el estado del juego desde el servidor
-    def update_game_state(self, data):
-        self.board = data['board']
-        self.currentPlayer = data['currentPlayer']
-        self.dibujar_tablero()
-
-    # Mostrar el ganador
-    def show_winner(self, data):
-        ganador = data['winner']
-        self.mostrar_mensaje(f"{ganador} GANÓ!", (0, 255, 0))
-
     def mostrar_mensaje(self, mensaje, color):
-        self.screen.fill((255, 255, 255))  
+        self.screen.fill((255, 255, 255))
         fuente = pygame.font.Font(None, 64)
         texto = fuente.render(mensaje, True, color)
         self.screen.blit(texto, (self.width // 2 - texto.get_width() // 2, self.height // 2 - texto.get_height() // 2))
         pygame.display.flip()
+

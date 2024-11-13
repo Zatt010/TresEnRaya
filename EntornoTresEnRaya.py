@@ -1,9 +1,6 @@
-# EntornoTresEnRaya.py
-
 import pygame
-import copy
 from AgenteIA.Entorno import Entorno
-
+import copy
 # Colores
 BLANCO = (255, 255, 255)
 NEGRO = (0, 0, 0)
@@ -15,51 +12,70 @@ TAMANO_CUADRO = 100
 LINEA_ANCHO = 10
 
 class EntornoTresEnRaya(Entorno):
-    def __init__(self, n):
+    def __init__(self, n, piezas_en_linea):
         super().__init__()
         self.n = n
+        self.piezas_en_linea = piezas_en_linea  # Objetivo de piezas en línea para ganar
         self.tablero = [[' ' for _ in range(n)] for _ in range(n)]
         self.turno = 0
         pygame.init()
         self.screen = pygame.display.set_mode((n * TAMANO_CUADRO, n * TAMANO_CUADRO))
-        pygame.display.set_caption("Tres en Raya")
+        pygame.display.set_caption(f"{n} en Raya")
         self.screen.fill(BLANCO)
         self.dibujar_tablero()
 
+    def verificar_linea(self, fila, col, delta_fila, delta_col):
+        objetivo = self.tablero[fila][col]
+        if objetivo == ' ':
+            return False
+
+        for i in range(1, self.piezas_en_linea):
+            nueva_fila = fila + i * delta_fila
+            nueva_col = col + i * delta_col
+            if not (0 <= nueva_fila < self.n and 0 <= nueva_col < self.n):
+                return False
+            if self.tablero[nueva_fila][nueva_col] != objetivo:
+                return False
+        return True
+
+    def finalizado(self):
+        for fila in range(self.n):
+            for col in range(self.n):
+                if self.tablero[fila][col] != ' ':
+                    if (self.verificar_linea(fila, col, 1, 0) or  # Horizontal
+                        self.verificar_linea(fila, col, 0, 1) or  # Vertical
+                        self.verificar_linea(fila, col, 1, 1) or  # Diagonal principal
+                        self.verificar_linea(fila, col, 1, -1)):  # Diagonal secundaria
+                        return True
+
+        if all(self.tablero[fila][col] != ' ' for fila in range(self.n) for col in range(self.n)):
+            return True
+        return False
+
+    def ganador(self):
+        for fila in range(self.n):
+            for col in range(self.n):
+                if self.tablero[fila][col] != ' ':
+                    if (self.verificar_linea(fila, col, 1, 0) or
+                        self.verificar_linea(fila, col, 0, 1) or
+                        self.verificar_linea(fila, col, 1, 1) or
+                        self.verificar_linea(fila, col, 1, -1)):
+                        return self.tablero[fila][col]
+        return None
+
     def percibir(self, agente):
-        return self.tablero
+        return copy.deepcopy(self.tablero)
 
     def ejecutar(self, agente):
         movimiento = agente.programa(self.tablero)
-        if movimiento:  
-            self.tablero = movimiento
-        self.turno = (self.turno + 1) % 2
-        self.dibujar_tablero()
-
-    def finalizado(self):
-        # Comprueba filas
-        for i in range(self.n):
-            if all(self.tablero[i][j] == self.tablero[i][0] and self.tablero[i][j] != ' ' for j in range(self.n)):
-                return True
-
-        # Comprueba columnas
-        for i in range(self.n):
-            if all(self.tablero[j][i] == self.tablero[0][i] and self.tablero[j][i] != ' ' for j in range(self.n)):
-                return True
-
-        # Comprueba diagonal principal
-        if all(self.tablero[i][i] == self.tablero[0][0] and self.tablero[i][i] != ' ' for i in range(self.n)):
-            return True
-
-        # Comprueba diagonal secundaria
-        if all(self.tablero[i][self.n - i - 1] == self.tablero[0][self.n - 1] and self.tablero[i][self.n - i - 1] != ' ' for i in range(self.n)):
-            return True
-
-        # Comprueba si el tablero está lleno
-        if all(self.tablero[i][j] != ' ' for i in range(self.n) for j in range(self.n)):
-            return True
-
-        return False
+        
+        if isinstance(movimiento, (tuple, list)) and len(movimiento) == 2:
+            fila, col = movimiento  # Desempaqueta fila y col
+            self.tablero[fila][col] = agente.jugador
+            self.turno = (self.turno + 1) % 2
+            self.dibujar_tablero()
+        else:
+            print(f"Movimiento inválido: {movimiento}")  
 
     def dibujar_tablero(self):
         for i in range(1, self.n):
@@ -69,54 +85,12 @@ class EntornoTresEnRaya(Entorno):
 
     def actualizar_tablero(self):
         fuente = pygame.font.Font(None, 100)
-        for fila in range(3):
-            for col in range(3):
+        for fila in range(self.n):
+            for col in range(self.n):
                 if self.tablero[fila][col] == 'X':
                     texto = fuente.render('X', True, ROJO)
+                    self.screen.blit(texto, (col * TAMANO_CUADRO + 25, fila * TAMANO_CUADRO + 10))
                 elif self.tablero[fila][col] == 'O':
                     texto = fuente.render('O', True, AZUL)
-                else:
-                    continue
-                self.screen.blit(texto, (col * TAMANO_CUADRO + 25, fila * TAMANO_CUADRO + 10))
+                    self.screen.blit(texto, (col * TAMANO_CUADRO + 25, fila * TAMANO_CUADRO + 10))
         pygame.display.flip()
-
-    def run(self):
-        jugando = True
-        while jugando:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    jugando = False
-
-            if not self.finalizado():
-                agente_actual = self.agentes[self.turno]
-                self.percibir(agente_actual)
-                self.ejecutar(agente_actual)
-
-            pygame.time.delay(500)  # Delay para visualizar mejor los movimientos
-
-        pygame.quit()
-
-    def ganador(self):
-        # Comprueba filas
-        for i in range(self.n):
-            if all(self.tablero[i][j] == self.tablero[i][0] and self.tablero[i][j] != ' ' for j in range(self.n)):
-                return self.tablero[i][0]
-
-        # Comprueba columnas
-        for i in range(self.n):
-            if all(self.tablero[j][i] == self.tablero[0][i] and self.tablero[j][i] != ' ' for j in range(self.n)):
-                return self.tablero[0][i]
-
-        # Comprueba diagonal principal
-        if all(self.tablero[i][i] == self.tablero[0][0] and self.tablero[i][i] != ' ' for i in range(self.n)):
-            return self.tablero[0][0]
-
-        # Comprueba diagonal secundaria
-        if all(self.tablero[i][self.n - i - 1] == self.tablero[0][self.n - 1] and self.tablero[i][self.n - i - 1] != ' ' for i in range(self.n)):
-            return self.tablero[0][self.n - 1]
-
-        # Comprueba si el tablero está lleno
-        if all(self.tablero[i][j] != ' ' for i in range(self.n) for j in range(self.n)):
-            return "EMPATE"
-
-        return None
