@@ -7,7 +7,7 @@ if __name__ == "__main__":
         piezas_en_linea = int(sys.argv[2])
     else:
         tamano_tablero = 6 
-        piezas_en_linea = 3  
+        piezas_en_linea = 4  
 
     tablero = Tablero(tamano_tablero, piezas_en_linea)
     tablero.run()
